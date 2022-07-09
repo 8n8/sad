@@ -54,7 +54,20 @@ type WriteFile struct {
 }
 
 func (w WriteFile) RUN() {
-	_ = os.WriteFile(w.path, w.contents, 0600)
+	err := os.WriteFile(w.path, w.contents, 0600)
+	UPDATEIO(fileWritten{err, w.path})
+}
+
+type fileWritten struct {
+	err  error
+	path string
+}
+
+func (f fileWritten) update(model Model) (Model, Cmd) {
+	if f.err != nil {
+		return model, Panic(f.err.Error())
+	}
+	return model, CmdNone{}
 }
 
 func (f fileContents) update(model Model) (Model, Cmd) {
@@ -74,9 +87,9 @@ func (f fileContents) update(model Model) (Model, Cmd) {
 		return Model(0), cmds
 	}
 
-	fromDisc, err := decodeUint16(f.contents)
+	var fromDisc, err = decodeUint16(f.contents)
 	if err != nil {
-		return model, Panic(err.Error())
+		return model, Panic(fmt.Sprintf("%s", err))
 	}
 
 	return Model(fromDisc), startServer
@@ -87,7 +100,7 @@ func decodeUint16(raw []byte) (uint16, error) {
 		return 0, errors.New("raw cache not 2 bytes")
 	}
 
-	return uint16(raw[0]) + uint16(raw[1])*256, nil
+	return uint16(raw[0]) + uint16(raw[1]) * 256, nil
 }
 
 type CmdNone struct{}

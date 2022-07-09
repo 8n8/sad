@@ -7,7 +7,6 @@ import qualified Data.Void
 import qualified System.Environment
 import qualified Text.Megaparsec as M
 import qualified Text.Megaparsec.Char as C
-import Text.Megaparsec.Debug (dbg)
 
 type Parser =
   M.Parsec Data.Void.Void T.Text
@@ -48,7 +47,7 @@ topLevelParsers =
     parseLiteralRuntime M.<?> "RUN function",
     parseTypeDeclaration,
     parseBind,
-    dbg "parseNamedPureFunction" parseNamedPureFunction
+    parseNamedPureFunction
   ]
 
 parseNamedPureFunction :: Parser ()
@@ -56,7 +55,7 @@ parseNamedPureFunction =
   do
     _ <- M.chunk "func"
     _ <- C.char ' '
-    _ <- M.choice [parseFunctionClass >> C.char '(' >> return (), return ()]
+    _ <- M.choice [parseFunctionClass >> C.char ' ' >> return (), return ()]
     _ <- parseName
     _ <- C.char '('
     _ <- M.takeWhileP Nothing (\c -> c /= ')')
@@ -82,7 +81,18 @@ parseNamedPureFunction =
 parsePureFunctionElement :: Parser ()
 parsePureFunctionElement =
   do
-    _ <- M.choice [parseIf, parseReturn, parseBind]
+    _ <- M.choice [parseIf, parseReturn, M.try parseBind, parseMultiBind]
+    return ()
+
+parseMultiBind :: Parser ()
+parseMultiBind =
+    do
+    _ <- M.chunk "var"
+    _ <- C.char ' '
+    _ <- M.some (parseCommaSeparated (parseName >> return ()) '=')
+    _ <- C.char '='
+    _ <- C.char ' '
+    _ <- parseValue
     return ()
 
 parseIf :: Parser ()
@@ -208,7 +218,6 @@ runFunctions =
     \}",
     "func (s startHttpServer) RUN() {\n\
     \\tsh := &http.Server{\n\
-    \\t\tAddr:           s.Addr,\n\
     \\t\tHandler:        HTTPHANDLER{},\n\
     \\t\tReadTimeout:    s.ReadTimeout,\n\
     \\t\tWriteTimeout:   s.WriteTimeout,\n\
@@ -231,6 +240,33 @@ runFunctions =
     "func (r ReadFile) RUN() {\n\
     \\tcontents, err := os.ReadFile(string(r))\n\
     \\tUPDATEIO(fileContents{string(r), contents, err})\n\
+    \}",
+    "func (w WriteFile) RUN() {\n\
+    \\terr := os.WriteFile(w.path, w.contents, 0600)\n\
+    \\tUPDATEIO(fileWritten{err, w.path})\n\
+    \}",
+    "func (f fileWritten) update(model Model) (Model, Cmd) {\n\
+    \\tif f.err != nil {\n\
+    \\t\treturn model, Panic(f.err.Error())\n\
+    \\t}\n\
+    \\treturn model, CmdNone{}\n\
+    \}",
+    "func (CmdNone) RUN() {\n\
+    \}",
+    "func (p Panic) RUN() {\n\
+    \\tpanic(p)\n\
+    \}",
+    "func (s startHttpServer) RUN() {\n\
+    \\tsh := &http.Server{\n\
+    \\t\tAddr:           s.Addr,\n\
+    \\t\tHandler:        HTTPHANDLER{},\n\
+    \\t\tReadTimeout:    s.ReadTimeout,\n\
+    \\t\tWriteTimeout:   s.WriteTimeout,\n\
+    \\t\tMaxHeaderBytes: s.MaxHeaderBytes,\n\
+    \\t}\n\
+    \\tGO <- func() {\n\
+    \\t\tUPDATEIO(crashedHttpServer{sh.ListenAndServe()})\n\
+    \\t}\n\
     \}"
   ]
 
@@ -321,19 +357,42 @@ parseMain =
 
 valueParsers :: [Parser ()]
 valueParsers =
-  [ M.try (dbg "parseInfixOperation" parseInfixOperation),
+  [ M.try parseInfixOperation,
     M.try doubleQuotedString,
     M.try slice,
     M.try parseTypeConversion,
     M.try functionCall,
-    parseMake,
+    M.try parseMake,
     M.try structLiteral,
     M.try parseImportedLookup,
     M.try parseDotLookup,
     M.try parseIntLiteral,
-    parseHex,
+    M.try parseHex,
+    M.try parseBracketedValue,
+    M.try parseSliceLookup,
     parseName >> return ()
   ]
+
+
+parseSliceLookup :: Parser ()
+parseSliceLookup =
+    do
+    _ <- parseName
+    _ <- C.char '['
+    _ <- parseValue
+    _ <- C.char ']'
+    return ()
+
+
+parseBracketedValue :: Parser ()
+parseBracketedValue =
+    do
+    _ <- C.char '('
+    _ <- M.choice [parseWhitespace, return ()]
+    _ <- parseValue
+    _ <- M.choice [parseWhitespace, return ()]
+    _ <- C.char ')'
+    return ()
 
 parseHex :: Parser ()
 parseHex =
@@ -369,6 +428,7 @@ infixValueParsers =
     M.try parseDotLookup,
     parseHex,
     M.try parseIntLiteral,
+    parseBracketedValue,
     parseName >> return ()
   ]
 
@@ -376,10 +436,13 @@ parseInfixOperation :: Parser ()
 parseInfixOperation =
   do
     _ <- parseInfixValue
-    _ <- parseWhitespace
-    parseInfixOperator
-    _ <- parseWhitespace
-    _ <- parseInfixValue
+    _ <- M.some $
+        M.try $
+        do
+        parseWhitespace
+        parseInfixOperator
+        parseWhitespace
+        parseInfixValue
     return ()
 
 parseInfixValue :: Parser ()
@@ -407,7 +470,9 @@ pureImports =
     "time.Second",
     "time.Duration",
     "http.ResponseWriter",
-    "http.Request"
+    "http.Request",
+    "errors.Is",
+    "errors.New"
   ]
 
 parseDotLookup :: Parser ()
@@ -453,7 +518,8 @@ slice =
   do
     _ <- parseType
     _ <- C.char '{'
-    _ <- M.many (parseCommaSeparated parseValue '}')
+    _ <- M.many (M.try $ parseCommaSeparated (M.try parseValue) '}')
+    _ <- M.choice [parseWhitespace, return ()]
     _ <- C.char '}'
     return ()
 
