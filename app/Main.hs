@@ -86,7 +86,7 @@ parsePureFunctionElement =
 
 parseMultiBind :: Parser ()
 parseMultiBind =
-    do
+  do
     _ <- M.chunk "var"
     _ <- C.char ' '
     _ <- M.some (parseCommaSeparated (parseName >> return ()) '=')
@@ -373,20 +373,18 @@ valueParsers =
     parseName >> return ()
   ]
 
-
 parseSliceLookup :: Parser ()
 parseSliceLookup =
-    do
+  do
     _ <- parseName
     _ <- C.char '['
     _ <- parseValue
     _ <- C.char ']'
     return ()
 
-
 parseBracketedValue :: Parser ()
 parseBracketedValue =
-    do
+  do
     _ <- C.char '('
     _ <- M.choice [parseWhitespace, return ()]
     _ <- parseValue
@@ -396,9 +394,10 @@ parseBracketedValue =
 
 parseHex :: Parser ()
 parseHex =
-    do
+  do
     _ <- M.chunk "0x"
-    _ <- M.takeWhile1P
+    _ <-
+      M.takeWhile1P
         Nothing
         (\c -> elem c ("0123456789ABCDEF" :: [Char]))
     return ()
@@ -437,12 +436,12 @@ parseInfixOperation =
   do
     _ <- parseInfixValue
     _ <- M.some $
-        M.try $
+      M.try $
         do
-        parseWhitespace
-        parseInfixOperator
-        parseWhitespace
-        parseInfixValue
+          parseWhitespace
+          parseInfixOperator
+          parseWhitespace
+          parseInfixValue
     return ()
 
 parseInfixValue :: Parser ()
