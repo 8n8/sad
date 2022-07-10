@@ -4,7 +4,6 @@ import qualified Data.ByteString as B
 import qualified Data.Text as T
 import qualified Data.Text.Encoding
 import qualified Data.Void
-import qualified System.Environment
 import qualified Text.Megaparsec as M
 import qualified Text.Megaparsec.Char as C
 
@@ -14,22 +13,20 @@ type Parser =
 main :: IO ()
 main =
   do
-    args <- System.Environment.getArgs
-    case args of
-      [path] ->
-        do
-          contents <- B.readFile path
-          case Data.Text.Encoding.decodeUtf8' contents of
-            Left _ ->
-              putStrLn "invalid character encoding: expecting UTF8"
-            Right raw ->
-              case M.parse parser "" raw of
-                Left err ->
-                  putStrLn (M.errorBundlePretty err)
-                Right () ->
-                  return ()
-      _ ->
-        putStrLn "expecting a single argument: a file path"
+    contents <- B.getContents
+    case Data.Text.Encoding.decodeUtf8' contents of
+      Left err ->
+        putStrLn $
+          mconcat $
+            [ "invalid character encoding: expecting UTF8: ",
+              show err
+            ]
+      Right raw ->
+        case M.parse parser "" raw of
+          Left err ->
+            putStrLn (M.errorBundlePretty err)
+          Right () ->
+            return ()
 
 parser :: Parser ()
 parser =
