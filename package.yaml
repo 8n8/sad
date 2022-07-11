@@ -44,3 +44,6 @@ tests:
     dependencies:
     - tasty
     - tasty-hunit
+    - text
+    - megaparsec
+    - sad
