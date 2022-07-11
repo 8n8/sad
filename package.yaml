@@ -2,9 +2,6 @@ name:                sad
 
 dependencies:
 - base
-- text
-- megaparsec
-- bytestring
 
 default-extensions:
 - OverloadedStrings
@@ -27,3 +24,20 @@ executables:
   sad:
     main:                Main.hs
     source-dirs:         app
+    dependencies:
+    - text
+    - megaparsec
+    - bytestring
+    - sad
+
+library:
+  source-dirs: src
+  dependencies:
+  - megaparsec
+  - text
+
+# tests:
+#   sad-test:
+#     main: Spec.hs
+#     source-dirs: test
+#     dependencies:
