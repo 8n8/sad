@@ -18,6 +18,7 @@ ghc-options:
 - -Wno-safe
 - -Wno-missing-safe-haskell-mode
 - -Wno-all-missed-specialisations
+- -Wno-type-defaults
 - -Wno-unsafe
 
 executables:
@@ -36,8 +37,10 @@ library:
   - megaparsec
   - text
 
-# tests:
-#   sad-test:
-#     main: Spec.hs
-#     source-dirs: test
-#     dependencies:
+tests:
+  sad-test:
+    main: Spec.hs
+    source-dirs: test
+    dependencies:
+    - tasty
+    - tasty-hunit
