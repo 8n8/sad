@@ -2,18 +2,14 @@ package main
 
 import (
 	"fmt"
-	"sync"
 )
 
 var GO = make(chan func(), 1)
 
 func main() {
-	GO <- Cmds([]Cmd{
+	Cmds([]Cmd{
 		fmtPrintln("What is your first name?"),
-		fmtScanln{}}).RUN
-	for {
-		go (<-GO)()
-	}
+		fmtScanln{}}).RUN()
 }
 
 type Cmds []Cmd
@@ -44,13 +40,9 @@ type Msg interface {
 	update(Model) (Model, Cmd)
 }
 
-var LOCK sync.Mutex
-
 func UPDATEIO(msg Msg) {
 	var cmd Cmd
-	LOCK.Lock()
 	MODEL, cmd = msg.update(MODEL)
-	LOCK.Unlock()
 	cmd.RUN()
 }
 

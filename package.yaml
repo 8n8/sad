@@ -20,6 +20,8 @@ ghc-options:
 - -Wno-all-missed-specialisations
 - -Wno-type-defaults
 - -Wno-unsafe
+- -Wno-monomorphism-restriction
+- -Wno-missing-deriving-strategies
 
 executables:
   sad:

@@ -20,7 +20,8 @@ topLevelParsers =
   [ packageDeclaration,
     parseWhitespace,
     parseImports,
-    parseMain M.<?> "main function",
+    M.try (parseAsyncMain M.<?> "asynchronous main function"),
+    parseSyncMain M.<?> "synchronous main function",
     parseLiteralRuntime M.<?> "RUN function",
     parseTypeDeclaration,
     parseBind,
@@ -159,6 +160,11 @@ runFunctions =
     \\tLOCK.Lock()\n\
     \\tMODEL, cmd = msg.update(MODEL)\n\
     \\tLOCK.Unlock()\n\
+    \\tcmd.RUN()\n\
+    \}",
+    "func UPDATEIO(msg Msg) {\n\
+    \\tvar cmd Cmd\n\
+    \\tMODEL, cmd = msg.update(MODEL)\n\
     \\tcmd.RUN()\n\
     \}",
     "func (p fmtPrintln) RUN() {\n\
@@ -321,8 +327,8 @@ parseSliceType =
     _ <- parseType
     return ()
 
-parseMain :: Parser ()
-parseMain =
+parseAsyncMain :: Parser ()
+parseAsyncMain =
   do
     _ <- M.chunk "func main() {\n\t"
     _ <- M.chunk "GO <- "
@@ -330,6 +336,16 @@ parseMain =
     _ <- M.chunk ".RUN"
     _ <- C.char '\n' M.<?> "new line"
     _ <- M.chunk "\tfor {\n\t\tgo (<-GO)()\n\t}\n}"
+    return ()
+
+parseSyncMain :: Parser ()
+parseSyncMain =
+  do
+    _ <- M.chunk "func main() {\n\t"
+    _ <- parseValue
+    _ <- M.chunk ".RUN()"
+    _ <- C.char '\n' M.<?> "new line"
+    _ <- C.char '}'
     return ()
 
 valueParsers :: [Parser ()]
