@@ -10,7 +10,7 @@ main :: IO ()
 main =
     Tasty.defaultMain $
     Tasty.testGroup "Sad" $
-    map rightTest rightTestCases
+    map rightTest rightTestCases <> map leftTest leftTestCases
 
 
 parse :: T.Text -> Either ParseError ()
@@ -39,6 +39,27 @@ rightTest (description, code) =
         parse code HUnit.@?= Right ()
 
 
+leftTest :: (Tasty.TestName, T.Text) -> Tasty.TestTree
+leftTest (description, code) =
+    HUnit.testCase description $ do
+        HUnit.assertBool "expecting Left" (parse code /= Right ())
+
+
+leftTestCases :: [(Tasty.TestName, T.Text)]
+leftTestCases =
+    [ ( "call RUN in pure function"
+      , "func f(a int) int {\n\
+        \\tRUN()\n\
+        \}"
+      )
+    , ( "call UPDATIO in pure function"
+      , "func f(a int) int {\n\
+        \\tUPDATEIO()\n\
+        \}"
+      )
+    ]
+
+
 rightTestCases :: [(Tasty.TestName, T.Text)]
 rightTestCases =
     [ ( "asyncronous main function"
@@ -54,6 +75,11 @@ rightTestCases =
     , ( "synchronous main function"
       , "func main() {\n\
         \\tfmtPrintln(\"hello\").RUN()\n\
+        \}"
+      )
+    , ( "simple pure function"
+      , "func add(a, b int) int {\n\
+        \\treturn a + b\n\
         \}"
       )
     ]
