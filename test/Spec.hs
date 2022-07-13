@@ -82,4 +82,12 @@ rightTestCases =
         \\treturn a + b\n\
         \}"
       )
+    , ( "simple pure method"
+      , "func (a int) F() int {\n\
+        \\treturn a + 1\n\
+        \}"
+      )
+    , ( "anonymous function"
+      , "var x = func(a int) { return a + 1 }"
+      )
     ]
