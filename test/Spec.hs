@@ -98,4 +98,12 @@ rightTestCases =
         \\treturn a + 1\n\
         \}"
       )
+    , ( "function with if statement"
+      , "func f(x int) int {\n\
+        \\tif x == 0 {\n\
+        \\t\treturn 0\n\
+        \\t}\n\
+        \\treturn 1\n\
+        \}"
+      )
     ]
