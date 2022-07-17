@@ -4,7 +4,6 @@ import qualified Text.Megaparsec.Char as C
 import qualified Text.Megaparsec as M
 import qualified Data.Text as T
 import qualified Data.Void
-import Text.Megaparsec.Debug (dbg)
 
 type Parser =
   M.Parsec Data.Void.Void T.Text
@@ -25,7 +24,7 @@ topLevelParsers =
     parseSyncMain M.<?> "synchronous main function",
     parseLiteralRuntime M.<?> "RUN function",
     parseTypeDeclaration,
-    dbg "parseBind" parseBind,
+    parseBind,
     parseNamedPureFunction
   ]
 
@@ -384,8 +383,10 @@ parseSyncMain =
 valueParsers :: [Parser ()]
 valueParsers =
   [ M.try parseInfixOperation,
+    M.try parseMapLiteral,
     M.try doubleQuotedString,
     M.try slice,
+    M.try parseAnonymousFunction,
     M.try parseTypeConversion,
     M.try functionCall,
     M.try parseMake,
@@ -396,7 +397,6 @@ valueParsers =
     M.try parseHex,
     M.try parseBracketedValue,
     M.try parseSliceLookup,
-    M.try $ dbg "parseAnonymouseFunction" parseAnonymousFunction,
     parseName >> return ()
   ]
 
@@ -530,10 +530,30 @@ structLiteral =
     _ <- C.char '}'
     return ()
 
+parseMapLiteral :: Parser ()
+parseMapLiteral =
+  do
+    _ <- parseMapType
+    _ <- C.char '{'
+    _ <- M.choice [parseWhitespace, return ()]
+    _ <- M.try $ M.many $ M.try $ parseCommaSeparated (M.try (mapLiteralMember)) '}'
+    _ <- M.choice [parseWhitespace, return ()]
+    _ <- C.char '}'
+    return ()
+
 structLiteralNamedMember :: Parser ()
 structLiteralNamedMember =
   do
     _ <- parseName
+    _ <- C.char ':'
+    _ <- M.choice [parseWhitespace, return ()]
+    _ <- parseValue
+    return ()
+
+mapLiteralMember :: Parser ()
+mapLiteralMember =
+  do
+    _ <- parseValue
     _ <- C.char ':'
     _ <- M.choice [parseWhitespace, return ()]
     _ <- parseValue
