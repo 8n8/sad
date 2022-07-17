@@ -4,6 +4,7 @@ import qualified Text.Megaparsec.Char as C
 import qualified Text.Megaparsec as M
 import qualified Data.Text as T
 import qualified Data.Void
+import Text.Megaparsec.Debug (dbg)
 
 type Parser =
   M.Parsec Data.Void.Void T.Text
@@ -24,9 +25,36 @@ topLevelParsers =
     parseSyncMain M.<?> "synchronous main function",
     parseLiteralRuntime M.<?> "RUN function",
     parseTypeDeclaration,
-    parseBind,
+    dbg "parseBind" parseBind,
     parseNamedPureFunction
   ]
+
+
+parseAnonymousFunction :: Parser ()
+parseAnonymousFunction =
+  do
+    _ <- M.chunk "func"
+    _ <- C.char '('
+    _ <- M.takeWhileP Nothing (\c -> c /= ')')
+    _ <- C.char ')'
+    _ <- C.char ' '
+    _ <- 
+        M.choice
+            [ parseType,
+              do
+                _ <- C.char '('
+                _ <- M.takeWhileP Nothing (\c -> c /= ')')
+                _ <- C.char ')'
+                return ()
+            ]
+    _ <- C.char ' '
+    _ <- C.char '{'
+    _ <- M.choice [parseWhitespace, return ()]
+    _ <- M.some (parsePureFunctionElement >> M.choice [parseWhitespace >> return ()])
+    _ <- M.choice [parseWhitespace, return ()]
+    _ <- C.char '}'
+    return ()
+
 
 parseNamedPureFunction :: Parser ()
 parseNamedPureFunction =
@@ -126,8 +154,13 @@ parseBind =
     _ <- M.chunk "var"
     _ <- C.char ' '
     _ <- parseName
-    _ <- C.char ' '
-    _ <- parseType
+    _ <- M.choice
+        [ M.try $ do
+            _ <- C.char ' '
+            _ <- parseType
+            return ()
+        , return ()
+        ]
     _ <- C.char ' '
     _ <- C.char '='
     _ <- C.char ' '
@@ -363,6 +396,7 @@ valueParsers =
     M.try parseHex,
     M.try parseBracketedValue,
     M.try parseSliceLookup,
+    M.try $ dbg "parseAnonymouseFunction" parseAnonymousFunction,
     parseName >> return ()
   ]
 

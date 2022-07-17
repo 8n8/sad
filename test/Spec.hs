@@ -88,6 +88,8 @@ rightTestCases =
         \}"
       )
     , ( "anonymous function"
-      , "var x = func(a int) { return a + 1 }"
+      , "var x = func(a int) int {\n\
+        \\treturn a + 1\n\
+        \}"
       )
     ]
