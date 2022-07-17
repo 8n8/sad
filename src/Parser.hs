@@ -1,9 +1,9 @@
 module Parser (parser) where
 
-import qualified Text.Megaparsec.Char as C
-import qualified Text.Megaparsec as M
 import qualified Data.Text as T
 import qualified Data.Void
+import qualified Text.Megaparsec as M
+import qualified Text.Megaparsec.Char as C
 
 type Parser =
   M.Parsec Data.Void.Void T.Text
@@ -28,7 +28,6 @@ topLevelParsers =
     parseNamedPureFunction
   ]
 
-
 parseAnonymousFunction :: Parser ()
 parseAnonymousFunction =
   do
@@ -37,15 +36,15 @@ parseAnonymousFunction =
     _ <- M.takeWhileP Nothing (\c -> c /= ')')
     _ <- C.char ')'
     _ <- C.char ' '
-    _ <- 
-        M.choice
-            [ parseType,
-              do
-                _ <- C.char '('
-                _ <- M.takeWhileP Nothing (\c -> c /= ')')
-                _ <- C.char ')'
-                return ()
-            ]
+    _ <-
+      M.choice
+        [ parseType,
+          do
+            _ <- C.char '('
+            _ <- M.takeWhileP Nothing (\c -> c /= ')')
+            _ <- C.char ')'
+            return ()
+        ]
     _ <- C.char ' '
     _ <- C.char '{'
     _ <- M.choice [parseWhitespace, return ()]
@@ -53,7 +52,6 @@ parseAnonymousFunction =
     _ <- M.choice [parseWhitespace, return ()]
     _ <- C.char '}'
     return ()
-
 
 parseNamedPureFunction :: Parser ()
 parseNamedPureFunction =
@@ -153,12 +151,13 @@ parseBind =
     _ <- M.chunk "var"
     _ <- C.char ' '
     _ <- parseName
-    _ <- M.choice
+    _ <-
+      M.choice
         [ M.try $ do
             _ <- C.char ' '
             _ <- parseType
-            return ()
-        , return ()
+            return (),
+          return ()
         ]
     _ <- C.char ' '
     _ <- C.char '='
@@ -309,21 +308,21 @@ parseType =
 
 parseFunctionType :: Parser ()
 parseFunctionType =
-    do
+  do
     _ <- M.chunk "func"
     _ <- C.char '('
     _ <- M.takeWhileP Nothing (\c -> c /= ')')
     _ <- C.char ')'
     _ <- C.char ' '
     _ <-
-        M.choice
-            [ parseType
-            , do
-                _ <- C.char '('
-                _ <- M.takeWhileP Nothing (\c -> c /= ')')
-                _ <- C.char ')'
-                return ()
-            ]
+      M.choice
+        [ parseType,
+          do
+            _ <- C.char '('
+            _ <- M.takeWhileP Nothing (\c -> c /= ')')
+            _ <- C.char ')'
+            return ()
+        ]
     return ()
 
 parseMapType :: Parser ()
@@ -638,16 +637,14 @@ parseName =
     first <- M.satisfy isFirstNameChar
     remainder <- M.takeWhileP Nothing isSubsequentNameChar
     let name = T.cons first remainder
-    if elem name forbiddenNames then
-        fail "forbidden name"
-
-    else
-        return (T.cons first remainder)
+    if elem name forbiddenNames
+      then fail "forbidden name"
+      else return (T.cons first remainder)
 
 forbiddenNames :: [T.Text]
 forbiddenNames =
-    [ "panic"
-    ]
+  [ "panic"
+  ]
 
 isSubsequentNameChar :: Char -> Bool
 isSubsequentNameChar ch =
