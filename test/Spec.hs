@@ -67,6 +67,9 @@ leftTestCases =
         \x = 3\n\
         \}"
       )
+    , ( "panic"
+      , "var x = panic(4)"
+      )
     ]
 
 
@@ -118,5 +121,23 @@ rightTestCases =
       )
     , ( "map literal"
       , "var x = map[int]string{3: \"hi\", 4: \"chip\"}"
+      )
+    , ( "type declaration"
+      , "type A b"
+      )
+    , ( "string literal"
+      , "var x string = \"x\""
+      )
+    , ( "struct literal"
+      , "var x = a{\n\
+        \\tb: 3,\n\
+        \\td: 4\n\
+        \}"
+      )
+    , ( "function call"
+      , "var x = y(3)"
+      )
+    , ( "function type"
+      , "type a func(int) int"
       )
     ]

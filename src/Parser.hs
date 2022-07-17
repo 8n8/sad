@@ -299,12 +299,32 @@ parseType :: Parser ()
 parseType =
   M.choice
     [ parsePointerType,
+      M.try $ parseFunctionType,
       M.try $ parseChanType,
       parseStructType,
       parseMapType,
       M.try $ M.choice [M.try parseImportedLookup, parseName >> return ()],
       parseSliceType
     ]
+
+parseFunctionType :: Parser ()
+parseFunctionType =
+    do
+    _ <- M.chunk "func"
+    _ <- C.char '('
+    _ <- M.takeWhileP Nothing (\c -> c /= ')')
+    _ <- C.char ')'
+    _ <- C.char ' '
+    _ <-
+        M.choice
+            [ parseType
+            , do
+                _ <- C.char '('
+                _ <- M.takeWhileP Nothing (\c -> c /= ')')
+                _ <- C.char ')'
+                return ()
+            ]
+    return ()
 
 parseMapType :: Parser ()
 parseMapType =
@@ -617,7 +637,17 @@ parseName =
   do
     first <- M.satisfy isFirstNameChar
     remainder <- M.takeWhileP Nothing isSubsequentNameChar
-    return (T.cons first remainder)
+    let name = T.cons first remainder
+    if elem name forbiddenNames then
+        fail "forbidden name"
+
+    else
+        return (T.cons first remainder)
+
+forbiddenNames :: [T.Text]
+forbiddenNames =
+    [ "panic"
+    ]
 
 isSubsequentNameChar :: Char -> Bool
 isSubsequentNameChar ch =
