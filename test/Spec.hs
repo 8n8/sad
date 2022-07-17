@@ -82,6 +82,12 @@ rightTestCases =
         \\treturn a + b\n\
         \}"
       )
+    , ( "multline pure function"
+      , "func f(x int) int {\n\
+        \\tvar y = x + 1\n\
+        \\treturn y * 2\n\
+        \}"
+      )
     , ( "simple pure method"
       , "func (a int) F() int {\n\
         \\treturn a + 1\n\
