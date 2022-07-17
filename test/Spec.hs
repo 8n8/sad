@@ -57,6 +57,11 @@ leftTestCases =
         \\tUPDATEIO()\n\
         \}"
       )
+    , ( "write to STDOUT in a pure function"
+      , "func f(a int) int {\n\
+        \\treturn os.stdio.Write([]byte(\"hi\"))\n\
+        \}"
+      )
     ]
 
 
