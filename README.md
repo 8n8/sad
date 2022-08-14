@@ -1,5 +1,7 @@
 # sad
 
+**This is a work in progress, and doesn't work very well yet**
+
 Sad is a method of writing Golang in a pure functional style and a source code analyser to enforce it.
 
 Functions are divided into two kinds: pure and standard. Pure functions:
