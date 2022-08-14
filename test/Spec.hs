@@ -172,15 +172,15 @@ rightTestCases =
       \}\n\
       \"
     ),
-    ( "single import statement"
-    , "import (\n\
+    ( "single import statement",
+      "import (\n\
       \\t\"fmt\"\n\
       \)"
     ),
-    ( "package declaration"
-    , "package main\n"
+    ( "package declaration",
+      "package main\n"
     ),
-    ( "test for GO channel declaration"
-    , "var GO = make(chan func(), 1)"
+    ( "test for GO channel declaration",
+      "var GO = make(chan func(), 1)"
     )
   ]

@@ -654,9 +654,9 @@ parseName =
 
 forbiddenNames :: [T.Text]
 forbiddenNames =
-  [ "panic"
-  , "copy"
-  , "append"
+  [ "panic",
+    "copy",
+    "append"
   ]
 
 isSubsequentNameChar :: Char -> Bool
