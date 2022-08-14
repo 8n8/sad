@@ -8,4 +8,6 @@ Functions are divided into two kinds: pure and standard. Pure functions:
 - cannot do IO
 - cannot mutate variables, either global ones or those declared internally
 
-So pure functions can only calculate a return value from 
+So pure functions can only calculate a return value from their arguments, nothing else.
+
+Standard functions are pre-defined, and will only be accepted if they are entered into the code exactly as pre-defined. They are used for IO and looping.
