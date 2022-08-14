@@ -24,7 +24,7 @@ topLevelParsers =
     parseImports,
     M.try (parseAsyncMain M.<?> "asynchronous main function"),
     parseSyncMain M.<?> "synchronous main function",
-    parseLiteralRuntime M.<?> "RUN function",
+    parsePredefined M.<?> "pre-defined function",
     parseTypeDeclaration,
     parseBind,
     parseNamedPureFunction
@@ -169,14 +169,14 @@ parseBind =
     _ <- parseValue
     return ()
 
-parseLiteralRuntime :: Parser ()
-parseLiteralRuntime =
+parsePredefined :: Parser ()
+parsePredefined =
   do
-    _ <- M.choice $ map M.chunk runFunctions
+    _ <- M.choice $ map M.chunk predefined
     return ()
 
-runFunctions :: [T.Text]
-runFunctions =
+predefined :: [T.Text]
+predefined =
   [ "func (cmds Cmds) RUN() {\n\
     \\tfor _, cmd := range cmds {\n\
     \\t\tcmd.RUN()\n\
@@ -285,6 +285,12 @@ runFunctions =
     \\tGO <- func() {\n\
     \\t\tUPDATEIO(crashedHttpServer{sh.ListenAndServe()})\n\
     \\t}\n\
+    \}",
+    "func LOOP[T any](mutable T, update func(T) T, keepGoing func(T) bool) T {\n\
+    \\tfor keepGoing(mutable) {\n\
+    \\t\tmutable = update(mutable)\n\
+    \\t}\n\
+    \\treturn mutable\n\
     \}"
   ]
 
