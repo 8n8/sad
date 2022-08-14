@@ -182,5 +182,11 @@ rightTestCases =
     ),
     ( "test for GO channel declaration",
       "var GO = make(chan func(), 1)"
+    ),
+    ( "empty struct declaration"
+    , "var x = struct{}{}"
+    ),
+    ( "empty struct alias"
+    , "type x struct{}"
     )
   ]
