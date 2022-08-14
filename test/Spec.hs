@@ -135,6 +135,9 @@ rightTestCases =
     ( "indexing into a struct member",
       "var x = a.b[0]\n"
     ),
+    ( "infix operation including slice lookup",
+      "var x = a + b[0]"
+    ),
     ( "generic loop",
       "type Increment struct {\n\
       \\tsum   int\n\

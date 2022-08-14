@@ -474,6 +474,7 @@ infixValueParsers =
     M.try functionCall,
     M.try structLiteral,
     M.try parseImportedLookup,
+    M.try parseSliceLookup,
     M.try parseDotLookup,
     parseHex,
     M.try parseIntLiteral,
