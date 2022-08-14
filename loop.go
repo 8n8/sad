@@ -5,7 +5,13 @@ import (
 )
 
 func main() {
-	fmt.Println(sumOfSlice([]int{3}))
+    fmtPrintln(string(sumOfSlice([]int{1,2,3}))).RUN()
+}
+
+type fmtPrintln string
+
+func (p fmtPrintln) RUN() {
+    fmt.Println(string(p))
 }
 
 type Increment struct {
