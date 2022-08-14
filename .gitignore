@@ -5,3 +5,4 @@ sad.cabal
 greet
 db
 persistentServer
+loop

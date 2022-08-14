@@ -5,13 +5,13 @@ import (
 )
 
 func main() {
-    fmtPrintln(string(sumOfSlice([]int{1,2,3}))).RUN()
+	fmtPrintln(fmt.Sprintf("%d", sumOfSlice([]int{1, 2, 3}))).RUN()
 }
 
 type fmtPrintln string
 
 func (p fmtPrintln) RUN() {
-    fmt.Println(string(p))
+	fmt.Println(string(p))
 }
 
 type Increment struct {
@@ -21,7 +21,7 @@ type Increment struct {
 }
 
 func sumOfSlice(slice []int) int {
-	return LOOP(
+	var result Increment = LOOP(
 		Increment{sum: 0, i: 0, slice: slice},
 		func(x Increment) Increment {
 			return Increment{
@@ -32,7 +32,8 @@ func sumOfSlice(slice []int) int {
 		},
 		func(x Increment) bool {
 			return x.i != len(x.slice)
-		}).sum
+		})
+	return result.sum
 }
 
 func LOOP[T any](mutable T, update func(T) T, keepGoing func(T) bool) T {

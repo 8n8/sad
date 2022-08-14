@@ -42,12 +42,12 @@ leftTestCases :: [(Tasty.TestName, T.Text)]
 leftTestCases =
   [ ( "call RUN in pure function",
       "func f(a int) int {\n\
-      \\treturn RUN()\n\
+      \\treturn a.RUN()\n\
       \}"
     ),
     ( "call UPDATIO in pure function",
       "func f(a int) int {\n\
-      \\return UPDATEIO()\n\
+      \\return a.UPDATEIO()\n\
       \}"
     ),
     ( "write to STDOUT in a pure function",
