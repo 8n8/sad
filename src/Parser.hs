@@ -656,7 +656,10 @@ forbiddenNames :: [T.Text]
 forbiddenNames =
   [ "panic",
     "copy",
-    "append"
+    "append",
+    "delete",
+    "print",
+    "recover"
   ]
 
 isSubsequentNameChar :: Char -> Bool
