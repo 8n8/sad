@@ -131,5 +131,41 @@ rightTestCases =
     ),
     ( "function type",
       "type a func(int) int"
+    ),
+    ( "indexing into a struct member",
+      "var x = a.b[0]\n"
+    ),
+    -- ( "generic loop",
+    --   "type Increment struct {\n\
+    --   \\tsum   int\n\
+    --   \\ti     int\n\
+    --   \\tslice []int\n\
+    --   \}\n\
+    --   \\n\
+    --   \func sumOfSlice(slice []int) int {\n\
+    --   \\treturn LOOP(\n\
+    --   \\t\tIncrement{sum: 0, i: 0, slice: slice},\n\
+    --   \\t\tfunc(x Increment) Increment {\n\
+    --   \\t\t\treturn Increment{\n\
+    --   \\t\t\t\tsum:   x.sum + x.slice[x.i],\n\
+    --   \\t\t\t\ti:     x.i + 1,\n\
+    --   \\t\t\t\tslice: slice,\n\
+    --   \\t\t\t}\n\
+    --   \\t\t},\n\
+    --   \\t\tfunc(x Increment) bool {\n\
+    --   \\t\t\treturn x.i != len(x.slice)\n\
+    --   \\t\t}).sum\n\
+    --   \}\n\
+    --   \\n\
+    --   \func LOOP[T any](mutable T, update func(T) T, keepGoing func(T) bool) T {\n\
+    --   \\tfor keepGoing(mutable) {\n\
+    --   \\t\tmutable = update(mutable)\n\
+    --   \\t}\n\
+    --   \\treturn mutable\n\
+    --   \}\n\
+    --   \"
+    -- ),
+    ( "slice lookup on a simple name",
+      "var x = b[c]"
     )
   ]

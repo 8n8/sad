@@ -5,6 +5,8 @@ import qualified Data.Void
 import qualified Text.Megaparsec as M
 import qualified Text.Megaparsec.Char as C
 
+-- import Text.Megaparsec.Debug (dbg)
+
 type Parser =
   M.Parsec Data.Void.Void T.Text
 
@@ -46,6 +48,12 @@ parseAnonymousFunction =
             return ()
         ]
     _ <- C.char ' '
+    _ <- parsePureFunctionBodyBlock
+    return ()
+
+parsePureFunctionBodyBlock :: Parser ()
+parsePureFunctionBodyBlock =
+  do
     _ <- C.char '{'
     _ <- M.choice [parseWhitespace, return ()]
     _ <- M.some (parsePureFunctionElement >> M.choice [parseWhitespace >> return ()])
@@ -74,11 +82,7 @@ parseNamedPureFunction =
             return ()
         ]
     _ <- C.char ' '
-    _ <- C.char '{'
-    _ <- M.choice [parseWhitespace, return ()]
-    _ <- M.some (parsePureFunctionElement >> M.choice [parseWhitespace >> return ()])
-    _ <- M.choice [parseWhitespace, return ()]
-    _ <- C.char '}'
+    _ <- parsePureFunctionBodyBlock
     return ()
 
 parsePureFunctionElement :: Parser ()
@@ -411,18 +415,18 @@ valueParsers =
     M.try parseMake,
     M.try structLiteral,
     M.try parseImportedLookup,
-    M.try parseDotLookup,
     M.try parseIntLiteral,
     M.try parseHex,
     M.try parseBracketedValue,
     M.try parseSliceLookup,
+    M.try parseDotLookup,
     parseName >> return ()
   ]
 
 parseSliceLookup :: Parser ()
 parseSliceLookup =
   do
-    _ <- parseName
+    _ <- M.choice [M.try parseDotLookup, parseName >> return ()]
     _ <- C.char '['
     _ <- parseValue
     _ <- C.char ']'
@@ -539,7 +543,7 @@ structLiteral =
   do
     _ <- M.choice [parseStructType, parseImportedLookup, parseName >> return ()]
     _ <- C.char '{'
-    _ <- parseWhitespace >> return ()
+    _ <- M.choice [parseWhitespace, return ()]
     _ <-
       M.choice
         [ M.try $ M.some $ M.try $ parseCommaSeparated (M.try structLiteralNamedMember) '}',
