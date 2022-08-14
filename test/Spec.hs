@@ -176,5 +176,8 @@ rightTestCases =
     , "import (\n\
       \\t\"fmt\"\n\
       \)"
+    ),
+    ( "package declaration"
+    , "package main\n"
     )
   ]
