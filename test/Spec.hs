@@ -179,5 +179,8 @@ rightTestCases =
     ),
     ( "package declaration"
     , "package main\n"
+    ),
+    ( "test for GO channel declaration"
+    , "var GO = make(chan func(), 1)"
     )
   ]
