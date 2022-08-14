@@ -171,5 +171,10 @@ rightTestCases =
       \\treturn mutable\n\
       \}\n\
       \"
+    ),
+    ( "single import statement"
+    , "import (\n\
+      \\t\"fmt\"\n\
+      \)"
     )
   ]

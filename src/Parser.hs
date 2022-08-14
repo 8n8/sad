@@ -691,7 +691,6 @@ parseImports =
     _ <- C.char '\n'
     _ <- M.some parseImport
     _ <- C.char ')'
-    _ <- C.char '\n'
     return ()
 
 parseImport :: Parser ()
