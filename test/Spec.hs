@@ -138,6 +138,9 @@ rightTestCases =
     ( "infix operation including slice lookup",
       "var x = a + b[0]"
     ),
+    ( "slice lookup on a simple name",
+      "var x = b[c]"
+    ),
     ( "generic loop",
       "type Increment struct {\n\
       \\tsum   int\n\
@@ -146,7 +149,7 @@ rightTestCases =
       \}\n\
       \\n\
       \func sumOfSlice(slice []int) int {\n\
-      \\treturn LOOP(\n\
+      \\tvar result = LOOP(\n\
       \\t\tIncrement{sum: 0, i: 0, slice: slice},\n\
       \\t\tfunc(x Increment) Increment {\n\
       \\t\t\treturn Increment{\n\
@@ -157,7 +160,8 @@ rightTestCases =
       \\t\t},\n\
       \\t\tfunc(x Increment) bool {\n\
       \\t\t\treturn x.i != len(x.slice)\n\
-      \\t\t}).sum\n\
+      \\t\t})\n\
+      \\treturn result.sum\n\
       \}\n\
       \\n\
       \func LOOP[T any](mutable T, update func(T) T, keepGoing func(T) bool) T {\n\
@@ -167,8 +171,5 @@ rightTestCases =
       \\treturn mutable\n\
       \}\n\
       \"
-    ),
-    ( "slice lookup on a simple name",
-      "var x = b[c]"
     )
   ]
