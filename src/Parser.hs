@@ -291,6 +291,14 @@ predefined =
     \\t\tmutable = update(mutable)\n\
     \\t}\n\
     \\treturn mutable\n\
+    \}",
+    "func INSERT[K comparable, V any](key K, value V, oldMap map[K]V) map[K]V {\n\
+    \\tvar newMap = make(map[K]V)\n\
+    \\tfor k, v := range oldMap {\n\
+    \\t\tnewMap[k] = v\n\
+    \\t}\n\
+    \\tnewMap[key] = value\n\
+    \\treturn newMap\n\
     \}"
   ]
 
