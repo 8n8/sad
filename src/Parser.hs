@@ -299,6 +299,14 @@ predefined =
     \\t}\n\
     \\tnewMap[key] = value\n\
     \\treturn newMap\n\
+    \}",
+    "func DELETE[K comparable, V any](key K, oldMap map[K]V) map[K]V {\n\
+    \\tvar newMap = make(map[K]V)\n\
+    \\tfor k, v := range oldMap {\n\
+    \\t\tnewMap[k] = v\n\
+    \\t}\n\
+    \\tdelete(newMap, key)\n\
+    \\treturn newMap\n\
     \}"
   ]
 
