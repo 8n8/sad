@@ -6,3 +6,4 @@ greet
 db
 persistentServer
 loop
+mapInsert

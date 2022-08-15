@@ -62,6 +62,18 @@ leftTestCases =
     ),
     ( "panic",
       "var x = panic(4)"
+    ),
+    ( "import without parentheses",
+      "import \"fmt\""
+    ),
+    ( "single line function"
+    , "func f(x int) { return x + 1 }"
+    ),
+    ( "single line if"
+    , "func f(x int) int {\n\
+      \\tif x == 0 { return 0 }\n\
+      \\treturn 1\n\
+      \}"
     )
   ]
 
