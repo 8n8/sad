@@ -182,9 +182,6 @@ predefined =
     \\t\tcmd.RUN()\n\
     \\t}\n\
     \}",
-    "func (p Print) RUN() {\n\
-    \\tfmt.Println(string(p))\n\
-    \}",
     "func (fmtScanln) RUN() {\n\
     \\tvar input string\n\
     \\tvar n, err = fmt.Scanln(&input)\n\
