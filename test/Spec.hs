@@ -40,12 +40,7 @@ leftTest (description, code) =
 
 leftTestCases :: [(Tasty.TestName, T.Text)]
 leftTestCases =
-  [ ( "call RUN in pure function",
-      "func f(a int) int {\n\
-      \\treturn a.RUN()\n\
-      \}"
-    ),
-    ( "call UPDATIO in pure function",
+  [ ( "call UPDATIO in pure function",
       "func f(a int) int {\n\
       \\return a.UPDATEIO()\n\
       \}"
@@ -66,13 +61,18 @@ leftTestCases =
     ( "import without parentheses",
       "import \"fmt\""
     ),
-    ( "single line function"
-    , "func f(x int) { return x + 1 }"
+    ( "single line function",
+      "func f(x int) { return x + 1 }"
     ),
-    ( "single line if"
-    , "func f(x int) int {\n\
+    ( "single line if",
+      "func f(x int) int {\n\
       \\tif x == 0 { return 0 }\n\
       \\treturn 1\n\
+      \}"
+    ),
+    ( "edit LOCK in pure function",
+      "func f(x int) bool {\n\
+      \\treturn LOCK.TryLock()\n\
       \}"
     )
   ]
@@ -195,10 +195,13 @@ rightTestCases =
     ( "test for GO channel declaration",
       "var GO = make(chan func(), 1)"
     ),
-    ( "empty struct declaration"
-    , "var x = struct{}{}"
+    ( "empty struct declaration",
+      "var x = struct{}{}"
     ),
-    ( "empty struct alias"
-    , "type x struct{}"
+    ( "empty struct alias",
+      "type x struct{}"
+    ),
+    ( "function call on dot lookup",
+      "var x = a.b(c)"
     )
   ]

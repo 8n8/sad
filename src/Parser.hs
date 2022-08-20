@@ -615,7 +615,12 @@ slice =
 functionCall :: Parser ()
 functionCall =
   do
-    _ <- M.choice [M.try parseImportedLookup, parseName >> return ()]
+    _ <-
+      M.choice
+        [ M.try parseImportedLookup,
+          M.try parseDotLookup,
+          parseName >> return ()
+        ]
     _ <- C.char '('
     _ <- M.many (parseCommaSeparated parseValue ')')
     _ <- C.char ')'
@@ -672,7 +677,8 @@ forbiddenNames =
     "append",
     "delete",
     "print",
-    "recover"
+    "recover",
+    "LOCK"
   ]
 
 isSubsequentNameChar :: Char -> Bool
