@@ -228,20 +228,6 @@ predefined =
     \\t\tw.done <- struct{}{}\n\
     \\t}\n\
     \}",
-    "func (p println) RUN() {\n\
-    \\tfmt.Println(string(p))\n\
-    \}",
-    "func (s startHttpServer) RUN() {\n\
-    \\tsh := &http.Server{\n\
-    \\t\tHandler:        HTTPHANDLER{},\n\
-    \\t\tReadTimeout:    s.ReadTimeout,\n\
-    \\t\tWriteTimeout:   s.WriteTimeout,\n\
-    \\t\tMaxHeaderBytes: s.MaxHeaderBytes,\n\
-    \\t}\n\
-    \\tGO <- func() {\n\
-    \\t\tUPDATEIO(crashedHttpServer{sh.ListenAndServe()})\n\
-    \\t}\n\
-    \}",
     "var GO = make(chan func(), 1)",
     "type Msg interface {\n\
     \\tupdate(Model) (Model, Cmd)\n\
@@ -259,12 +245,6 @@ predefined =
     "func (w WriteFile) RUN() {\n\
     \\terr := os.WriteFile(w.path, w.contents, 0600)\n\
     \\tUPDATEIO(fileWritten{err, w.path})\n\
-    \}",
-    "func (f fileWritten) update(model Model) (Model, Cmd) {\n\
-    \\tif f.err != nil {\n\
-    \\t\treturn model, Panic(f.err.Error())\n\
-    \\t}\n\
-    \\treturn model, CmdNone{}\n\
     \}",
     "func (CmdNone) RUN() {\n\
     \}",

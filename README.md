@@ -147,20 +147,193 @@ Sad currently only uses goroutines to avoid being blocked by slow IO, so it migh
 
 These functions / types etc are predefined exactly, and to be accepted by Sad you must include them character-by-character as shown here if you want to use them.
 
+Most of them are `RUN` methods that execute IO. Some however are functions that are externally pure in that they don't do IO and don't alter their arguments, but do some mutation inside. These are used for looping and for operations on collections.
+
+Run a bunch of commands:
 ```
 func (cmds Cmds) RUN() {
 	for _, cmd := range cmds {
-		cmd.RUN()\n\
+		cmd.RUN()
 	}
 }
 ```
 
+Read a line from STDIN:
 ```
 func (fmtScanln) RUN() {
-	var input string\n\
-	var n, err = fmt.Scanln(&input)\n\
-	UPDATEIO(fmtScanlnResult{input, n, err})\n\
+	var input string
+	var n, err = fmt.Scanln(&input)
+	UPDATEIO(fmtScanlnResult{input, n, err})
 }
 ```
 
-**TODO** add the rest of these functions.
+This is only used from other standard functions. It is a helper for updating the program state for a multi-threaded program.
+```
+func UPDATEIO(msg Msg) {
+	var cmd Cmd
+	LOCK.Lock()
+	MODEL, cmd = msg.update(MODEL)
+	LOCK.Unlock()
+	cmd.RUN()
+}
+```
+
+A helper for updating the state of single-threaded program. This is only called from other standard functions.
+```
+func UPDATEIO(msg Msg) {
+	var cmd Cmd
+	MODEL, cmd = msg.update(MODEL)
+	cmd.RUN()
+}
+```
+
+Print to STDIO, followed by a newline.
+```
+func (p fmtPrintln) RUN() {
+	fmt.Println(string(p))
+}
+```
+
+Declare the global lock. For protecting the state in a multi-threaded program.
+```
+var LOCK sync.Mutex
+```
+
+A handler for HTTP requests.
+```
+func (HTTPHANDLER) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	done := make(chan httpResponse, 1)
+	request := httpRequest{
+		Method:     r.Method,
+		Path:       r.URL.Path,
+		Header:     r.Header,
+		RemoteAddr: r.RemoteAddr,
+		Done:       done,
+	}
+	UPDATEIO(request)
+	response := <-done
+	for key, values := range response.Header {
+		for _, value := range values {
+			w.Header().Set(key, value)
+		}
+	}
+	w.WriteHeader(response.StatusCode)
+	_, _ = w.Write(response.Body)
+}
+```
+
+Send a response to an HTTP request.
+```
+func (w writeHttpResponse) RUN() {
+	GO <- func() {
+		w.w.Write(w.message)
+		w.done <- struct{}{}
+	}
+}
+```
+
+This is used by standard functions to send jobs to be executed in a separate goroutine.
+```
+var GO = make(chan func(), 1)
+```
+
+A `Msg` is an input from the outside world, i.e. the result of doing some IO. The `update` function is a pure function that updates the program state and decides what IO to do, based on an input.
+```
+type Msg interface {
+	update(Model) (Model, Cmd)
+}
+```
+
+A `Cmd` is an instruction to do some IO, created by a pure function. The `RUN` function executes the instruction.
+```
+type Cmd interface {
+	RUN()
+}
+```
+
+Puts an HTTP response into a channel so it can be sent by the receiver.
+```
+func (w writeHttpResponse) RUN() {
+	w.Done <- w.Response
+}
+```
+
+Reads a whole file into a byte slice.
+```
+func (r ReadFile) RUN() {
+	contents, err := os.ReadFile(string(r))
+	UPDATEIO(fileContents{string(r), contents, err})
+}
+```
+
+Writes a whole file.
+```
+func (w WriteFile) RUN() {
+	err := os.WriteFile(w.path, w.contents, 0600)
+	UPDATEIO(fileWritten{err, w.path})
+}
+```
+
+Doesn't do anything. Sometimes an `update` function only needs to update the program state and doesn't want to run any IO, in which case it can return `CmdNone` as its `Cmd`.
+```
+func (CmdNone) RUN() {
+}
+```
+
+Crash.
+```
+func (p Panic) RUN() {
+	panic(p)
+}
+```
+
+
+Start up an HTTP server.
+```
+func (s startHttpServer) RUN() {
+	sh := &http.Server{
+		Addr:           s.Addr,
+		Handler:        HTTPHANDLER{},
+		ReadTimeout:    s.ReadTimeout,
+		WriteTimeout:   s.WriteTimeout,
+		MaxHeaderBytes: s.MaxHeaderBytes,
+	}
+	GO <- func() {
+		UPDATEIO(crashedHttpServer{sh.ListenAndServe()})
+	}
+}
+```
+
+A general looping function. It keeps on updating `mutable` using `update` while `keepGoing` wants it to. Note that although this function has mutation interlly it is pure from a caller's perspective, and can therefore be used in pure functions.
+```
+func LOOP[T any](mutable T, update func(T) T, keepGoing func(T) bool) T {
+	for keepGoing(mutable) {
+		mutable = update(mutable)
+	}
+	return mutable
+}
+```
+
+For inserting elements into a map. Or rather, it returns a copy of the original map with the new element in it. Like `LOOP`, this function is pure externally, so can be called from a pure function, even though it contains mutation.
+```
+func INSERT[K comparable, V any](key K, value V, oldMap map[K]V) map[K]V {
+	var newMap = make(map[K]V)
+	for k, v := range oldMap {
+		newMap[k] = v
+	}
+	newMap[key] = value
+	return newMap
+}
+```
+
+For removing elements from a map. Or rather, it returns a copy of the original map but with the element removed. Again, this function is pure externally so can be called from a pure function, even though it contains mutation.
+```
+func DELETE[K comparable, V any](key K, oldMap map[K]V) map[K]V {
+	var newMap = make(map[K]V)
+	for k, v := range oldMap {
+		newMap[k] = v
+	}
+	delete(newMap, key)
+	return newMap
+}
+```
