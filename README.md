@@ -304,7 +304,7 @@ func (s startHttpServer) RUN() {
 }
 ```
 
-A general looping function. It keeps on updating `mutable` using `update` while `keepGoing` wants it to. Note that although this function has mutation interlly it is pure from a caller's perspective, and can therefore be used in pure functions.
+A general looping function. It keeps on updating `mutable` using `update` while `keepGoing` wants it to. Note that although this function has mutation internally it is pure from a caller's perspective, and can therefore be used in pure functions.
 ```
 func LOOP[T any](mutable T, update func(T) T, keepGoing func(T) bool) T {
 	for keepGoing(mutable) {
