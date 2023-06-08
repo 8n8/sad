@@ -1,7 +1,5 @@
 # Sad
 
-**This is a work in progress, and doesn't work very well yet. It's not ready to use.**
-
 Sad is a method of writing Golang in a pure functional style and a source code analyser to enforce it.
 
 ## Hello world
